@@ -1,5 +1,4 @@
-#! /usr/bin/env nix-shell
-#! nix-shell -i sh -p sbcl
+#! /usr/bin/env bash
 
 # N.B. quicklisp must be installed and configured.
 

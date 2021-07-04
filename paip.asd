@@ -3,7 +3,7 @@
 (asdf:defsystem #:paip
   :description "Paradigms of Artificial Intelligence Programming exercises"
   :author "Eric Bailey <eric@ericb.me>"
-  ;; TODO :license "Specify license here"
+  :license "BSD-3"
   :depends-on (#:lisp-unit)
   :serial t
   :components ((:module "src"

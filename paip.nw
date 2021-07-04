@@ -1,4 +1,4 @@
-% -*- ess-noweb-default-code-mode: lisp-mode; -*-
+% -*- noweb-code-mode: lisp-mode; -*-
 \documentclass{tufte-book}
 \usepackage{noweb}
 
@@ -34,7 +34,10 @@
 
 \author{Eric Bailey}
 
-% \date{January 23, 2017}
+\date{%
+  January 23, 2017%
+  \thanks{Last updated \today}%
+}
 
 \newcommand{\stylehook}{\marginpar{\raggedright\sl Style hook}}
 
@@ -1104,7 +1107,7 @@ N.B. These results are undesirable and will be addressed in chapter 6.
 (asdf:defsystem #:paip
   :description "Paradigms of Artificial Intelligence Programming exercises"
   :author "Eric Bailey <eric@ericb.me>"
-  ;; TODO :license "Specify license here"
+  :license "BSD-3"
   :depends-on (#:lisp-unit)
   :serial t
   :components ((:module "src"
