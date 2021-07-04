@@ -1,0 +1,13 @@
+#! /usr/bin/env nix-shell
+#! nix-shell -i sh -p sbcl
+
+# N.B. quicklisp must be installed and configured.
+
+sbcl --noinform --non-interactive \
+     --userinit init.lisp \
+     --eval "(in-package :paip.$1)" \
+     --eval "(let* ((results  (lisp-unit:run-tests :all :paip.$1))
+                    (failures (lisp-unit:failed-tests results))
+                    (status   (if (null failures) 0 1)))
+               (lisp-unit:print-failures results)
+               (sb-posix:exit status))"

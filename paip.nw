@@ -1,0 +1,1163 @@
+% -*- ess-noweb-default-code-mode: lisp-mode; -*-
+\documentclass{tufte-book}
+\usepackage{noweb}
+
+\usepackage{color}
+% https://commons.wikimedia.org/wiki/File:Erlang_logo.svg
+\definecolor{ErlangRed}{HTML}{A90533}
+
+\usepackage{hyperref}
+\hypersetup{
+  bookmarks=true,
+  pdffitwindow=true,
+  pdfstartview={FitH},
+  pdftitle={PAIP Exercises},
+  pdfauthor={Eric Bailey <eric@ericb.me>},
+  pdfsubject={Paradigms of Artificial Intelligence Programming},
+  pdfkeywords={Lisp, artificial intelligence, literate programming, noweb},
+  colorlinks=true,
+  linkcolor=ErlangRed,
+  urlcolor=ErlangRed
+}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\usepackage[outputdir=tex]{minted}
+
+% NOTE: Use Tufte instead of noweb page style.
+% \pagestyle{noweb}
+% NOTE: Use shift option for wide code.
+\noweboptions{smallcode,shortxref,webnumbering,english}
+
+\title{PAIP Exercises}
+
+\author{Eric Bailey}
+
+% \date{January 23, 2017}
+
+\newcommand{\stylehook}{\marginpar{\raggedright\sl Style hook}}
+
+\newmintinline[lsp]{lisp}{}
+
+\begin{document}
+\maketitle
+@
+
+\tableofcontents
+\newpage
+
+\chapter{Introduction to Common Lisp}
+
+\section{Using Functions}
+
+<<titles>>=
+(defparameter *titles*
+  '(Mr Mrs Miss Ms Sir Madam Dr Admiral Major General)
+  "A list of titles that can appear at the start of a name.")
+@ %def *titles*
+
+<<abstract first-name>>=
+(<<function first-name(name):>>
+  (<<if the first element of name is a title>>
+    <<then return the first-name of the rest of the name>>
+    <<else return the first element of the name>>))
+@
+
+<<function first-name(name):>>=
+defun first-name (name)
+ "Select the first name from a name represented as a list."
+@
+
+<<if the first element of name is a title>>=
+if (member (first name) *titles*)
+@
+
+<<then return the first-name of the rest of the name>>=
+  (first-name (rest name))
+@
+
+<<else return the first element of the name>>=
+(first name)
+@
+
+\section{Exercises}
+
+<<src/intro.lisp>>=
+(in-package #:paip)
+(defpackage #:paip.intro
+  (:use #:cl #:lisp-unit))
+(in-package #:paip.intro)
+
+<<titles>>
+
+;; Exercise 1.1
+<<Exercise 1.1>>
+
+;; Exercise 1.2
+<<Exercise 1.2>>
+
+;; Exercise 1.3
+<<Exercise 1.3>>
+@
+
+\subsection{Exercise 1.1}
+
+\begin{quote}
+  Define a version of [[last-name]] that handles ``Rex Morgan MD,'' ``Morton
+  Downey, Jr.,'' and whatever other cases you can think of.
+\end{quote}
+
+<<Exercise 1.1>>=
+<<suffixes>>
+
+<<last-name>>
+
+<<Exercise 1.1 tests>>
+@
+
+<<last-name>>=
+(defun last-name (name)
+  "Select the last name from a name represented as a list."
+  (if <<the last element of a name is a suffix>>
+      <<then return the [[last-name]] of all but the last element of the name>>
+    <<else return the last element of the name>>))
+@
+
+First, we check to see if the last element of the \lsp{name} is a suffix, i.e.
+whether it's a member of [[*suffixes*]].
+<<the last element of a name is a suffix>>=
+(member (first (last name)) *suffixes*)
+@
+
+If it is, then drop it from the \lsp{name} and return the [[last-name]] of the
+result.
+<<then return the [[last-name]] of all but the last element of the name>>=
+(last-name (butlast name))
+@
+
+Otherwise, it's the last name, so return it.
+<<else return the last element of the name>>=
+(first (last name))
+@
+
+<<suffixes>>=
+(defparameter *suffixes*
+  '(MD Jr)
+  "A list of suffixes that can appear at the end of a name.")
+@ %def *suffixes*
+
+<<Exercise 1.1 tests>>=
+(define-test test-last-name
+  <<Rex Morgan MD>>
+  <<Morton Downey, Jr>>)
+@
+
+\marginnote[\baselineskip]{
+  Assert that the [[last-name]] of {\sl Rex Morgan MD} is {\sl Morgan}.
+}
+<<Rex Morgan MD>>=
+(assert-equal 'Morgan (last-name '(Rex Morgan MD)))
+@
+
+<<Morton Downey, Jr>>=
+(assert-equal 'Downey (last-name '(Morton Downey Jr)))
+@
+
+\subsection{Exercise 1.2}
+
+\begin{quote}
+  Write a function to exponentiate, or raise a number to an integer power. For
+  example \lsp{(}[[power]]\lsp{ 3 2)} $= 3^2 = 9$.
+\end{quote}
+
+<<Exercise 1.2>>=
+<<square>>
+
+<<power>>
+
+<<Exercise 1.2 tests>>
+@
+
+\marginnote[2.5\baselineskip]{
+  \begin{align*}
+    x^n = \begin{cases}
+      1 & \text{if } n = 0, \\
+      (x^{n / 2})^2 & \text{if } n \text{ is even}, \\
+      x \times x^{n - 1} & \text{otherwise}.
+    \end{cases}
+  \end{align*}
+}
+<<power>>=
+(defun power (x n)
+  "Raise x to the power of n."
+  (cond <<if n is zero return 1>>
+        <<if n is even return x to the power of n over two, squared>>
+        <<otherwise return x times x to the power of n minus one>>))
+@
+
+\marginnote[\baselineskip]{$x^0 = 1$}
+<<if n is zero return 1>>=
+((zerop n) 1)
+@
+
+<<if n is even return x to the power of n over two, squared>>=
+((evenp n) (square (power x (/ n 2))))
+@
+
+<<otherwise return x times x to the power of n minus one>>=
+(t (* x (power x (- n 1))))
+@
+
+\marginnote[\baselineskip]{$\text{square}(x) = x^2$}
+<<square>>=
+(defun square (x) (expt x 2))
+@
+
+<<Exercise 1.2 tests>>=
+(define-test test-power
+  (assert-equal 9 (power 3 2)))
+@
+
+\subsection{Exercise 1.3}
+
+\begin{quote}
+  Write a function that counts the number of atoms in an expression. For
+  example: \lsp{(}[[count-atoms]]\lsp{ '(a (b) c))} $= 3$. Notice that there is
+  something of an ambiguity in this: should \lsp{(a nil c)} count as three
+  atoms, or as two, because it is equivalent to \lsp{(a () c)}?
+\end{quote}
+
+<<Exercise 1.3>>=
+(defun count-atoms (exp)
+  "Return the total number of non-nil atoms in the expression."
+  (cond <<if exp is nil there are no atoms>>
+        <<if exp is an atom there is only one>>
+        <<otherwise add the count of the atoms in the first and rest of exp>>))
+@
+
+<<if exp is nil there are no atoms>>=
+((null exp) 0)
+@
+
+<<if exp is an atom there is only one>>=
+((atom exp) 1)
+@
+
+<<otherwise add the count of the atoms in the first and rest of exp>>=
+(t (+ (count-atoms (first exp))
+      (count-atoms (rest exp))))
+@
+
+\section{Higher-Order Functions}
+
+<<mappend>>=
+(defun mappend (fn the-list)
+  "Apply fn to each element of list and append the results."
+  (apply #'append (mapcar fn the-list)))
+@
+
+\chapter{A Simple Lisp Program}
+
+<<random-elt>>=
+(defun random-elt (choices)
+  "Choose an element from a list at random."
+  (elt choices (random (length choices))))
+@
+
+\chapter{Overview of Lisp}
+
+<<find-all>>=
+(defun find-all (item sequence &rest keyword-args
+                 &key (test #'eql) test-not &allow-other-keys)
+  "Find all those elements of sequence that match item,
+  according to the keywords. Doesn't alter sequence."
+  (if test-not
+      (apply #'remove item sequence
+             :test-not (complement test-not) keyword-args)
+      (apply #'remove item sequence
+             :test (complement test) keyword-args)))
+
+;; (setf (symbol-function 'find-all-if) #'remove-if-not)
+@
+
+\chapter{GPS: The General Problem Solver}
+
+<<src/gps.lisp>>=
+(in-package #:paip)
+(defpackage #:paip.gps
+  (:use #:cl #:lisp-unit)
+  (:shadow #:debug)
+  (:export #:GPS))
+(in-package #:paip.gps)
+
+<<find-all>>
+
+<<mappend>>
+
+<<A list of available operators>>
+
+<<An operation with preconds, add-list and del-list>>
+
+<<Solve a goal from a state using a list of operators>>
+
+<<Achieve an individual goal>>
+
+<<Achieve all goals>>
+
+<<Decide if an operator is appropriate for a goal>>
+
+<<Apply operator to current state>>
+
+<<Auxiliary Functions>>
+
+<<Nursery School Example>>
+
+<<Monkey and Bananas Example>>
+
+<<The Maze Searching Domain>>
+
+<<Maze Tests>>
+
+<<Convert existing operators>>
+
+<<The Blocks World Domain>>
+
+<<Print debugging information>>
+
+<<GPS Tests>>
+@
+
+<<A list of available operators>>=
+(defvar *ops* nil "A list of available operators.")
+@
+
+<<An operation with preconds, add-list and del-list>>=
+(defstruct op
+  "An operation"
+  (action nil)
+  (preconds nil)
+  (add-list nil)
+  (del-list nil))
+@
+
+<<Solve a goal from a state using a list of operators>>=
+(defun GPS (state goals &optional (*ops* *ops*))
+  "General Problem Solver: from state, achieve goals using *ops*."
+  (remove-if-not #'action-p
+                 (achieve-all (cons '(start) state) goals nil)))
+@
+
+<<Achieve all goals>>=
+(defun achieve-all (state goals goal-stack)
+  "Achieve each goal, trying several orderings."
+  (some #'(lambda (goals) (achieve-each state goals goal-stack))
+        (orderings goals)))
+
+(defun achieve-each (state goals goal-stack)
+  "Try to achieve each goal, then make sure they still hold."
+  (let ((current-state state))
+    (if (and (every #'(lambda (g)
+                        (setf current-state
+                              (achieve current-state g goal-stack)))
+                    goals)
+             (subsetp goals current-state :test #'equal))
+        current-state)))
+
+(defun orderings (lst)
+  (if (> (length lst) 1)
+      (list lst (reverse lst))
+      (list lst)))
+@
+
+<<Achieve an individual goal>>=
+(defun achieve (state goal goal-stack)
+  "A goal is achieved if it already holds,
+  or if there is an appropriate op for it that is applicable."
+  (dbg-indent :gps (length goal-stack) "Goal: ~a" goal)
+  (cond ((member-equal goal state)      state)
+        ((member-equal goal goal-stack) nil)
+        (t (some #'(lambda (op) (apply-op state goal op goal-stack))
+                 (appropriate-ops goal state)))))
+
+(defun appropriate-ops (goal state)
+  "Return a list of appropriate operators,
+  sorted by the number of unfulfilled preconditions."
+  (sort (copy-list (find-all goal *ops* :test #'appropriate-p)) #'<
+        :key #'(lambda (op)
+                 (count-if #'(lambda (precond)
+                               (not (member-equal precond state)))
+                           (op-preconds op)))))
+@
+
+<<Decide if an operator is appropriate for a goal>>=
+(defun appropriate-p (goal op)
+  "An op is appropriate to a goal if it is in its add list."
+  (member-equal goal (op-add-list op)))
+@
+
+<<Apply operator to current state>>=
+(defun apply-op (state goal op goal-stack)
+  "Return a new, transformed state if op is applicable."
+  (dbg-indent :gps (length goal-stack) "Consider: ~a" (op-action op))
+  (let ((state* (achieve-all state (op-preconds op)
+                             (cons goal goal-stack))))
+    (unless (null state*)
+      (dbg-indent :gps (length goal-stack) "Action: ~a" (op-action op))
+      (append (remove-if #'(lambda (x)
+                             (member-equal x (op-del-list op)))
+                         state*)
+              (op-add-list op)))))
+@
+
+\section{Auxiliary Functions}
+
+<<Auxiliary Functions>>=
+<<Is a condition an executing form?>>
+
+<<Is x an action?>>
+
+<<Is the argument a list that starts with a given atom?>>
+
+<<Convert an operator to use the executing convention>>
+
+<<Create an operator>>
+
+<<Use a list of of operators>>
+
+<<Test if an element is equal to a member of a list>>
+@
+
+<<Is a condition an executing form?>>=
+(defun executing-p (x)
+  "Is x of the form: (executing ...) ?"
+  (starts-with x 'executing))
+@
+
+<<Is x an action?>>=
+(defun action-p (x)
+  "Is x something that is (start) or (executing ...)?"
+  (or (equal x '(start)) (executing-p x)))
+@
+
+<<Is the argument a list that starts with a given atom?>>=
+(defun starts-with (list x)
+  "Is this a list whose first element is x?"
+  (and (consp list) (eql (first list) x)))
+@
+
+<<Convert an operator to use the executing convention>>=
+(defun convert-op (op)
+  "Make op conform to the (EXECUTING op) convention."
+  (unless (some #'executing-p (op-add-list op))
+    (push (list 'executing (op-action op)) (op-add-list op)))
+  op)
+@
+
+<<Create an operator>>=
+(defun op (action &key preconds add-list del-list)
+  "Make a new operator that obeys the (EXECUTING op) convention."
+  (convert-op (make-op :action action
+                       :preconds preconds
+                       :add-list add-list
+                       :del-list del-list)))
+@
+
+<<Convert existing operators>>=
+(mapc #'convert-op *school-ops*)
+@
+
+<<Use a list of of operators>>=
+(defun use (oplist)
+  "Use oplist as the default list of operators."
+  (length (setf *ops* oplist)))
+@
+
+<<Test if an element is equal to a member of a list>>=
+(defun member-equal (item list)
+  (member item list :test #'equal))
+@
+
+\section{Nursery School Example}
+
+To drive the son to school, the son must start at home and the car must work.
+<<Drive son to school>>=
+(make-op :action 'drive-son-to-school
+         :preconds '(son-at-home car-works)
+         :add-list '(son-at-school)
+         :del-list '(son-at-home))
+@
+
+<<Nursery School Example>>=
+(defparameter *school-ops*
+  (list
+   <<Drive son to school>>
+   (make-op :action 'shop-installs-battery
+            :preconds '(car-needs-battery shop-knows-problem shop-has-money)
+            :add-list '(car-works))
+   (make-op :action 'tell-shop-problem
+            :preconds '(in-communication-with-shop)
+            :add-list '(shop-knows-problem))
+   (make-op :action 'telephone-shop
+            :preconds '(know-phone-number)
+            :add-list '(in-communication-with-shop))
+   (make-op :action 'look-up-number
+            :preconds '(have-phone-book)
+            :add-list '(know-phone-number))
+   (make-op :action 'give-shop-money
+            :preconds '(have-money)
+            :add-list '(shop-has-money)
+            :del-list '(have-money))))
+@ %def *school-ops*
+
+\section{Monkey and Bananas}
+
+<<Monkey and Bananas Example>>=
+(defparameter *banana-ops*
+  (list
+   (op 'climb-on-chair
+       :preconds '(chair-at-middle-room at-middle-room on-floor)
+       :add-list '(at-bananas on-chair)
+       :del-list '(at-middle-room on-floor))
+   (op 'push-chair-from-door-to-middle-room
+       :preconds '(chair-at-door at-door)
+       :add-list '(chair-at-middle-room at-middle-room)
+       :del-list '(chair-at-door at-door))
+   (op 'walk-from-door-to-middle-room
+       :preconds '(at-door on-floor)
+       :add-list '(at-middle-room)
+       :del-list '(at-door))
+   (op 'grasp-bananas
+       :preconds '(at-bananas empty-handed)
+       :add-list '(has-bananas)
+       :del-list '(empty-handed))
+   (op 'drop-ball
+       :preconds '(has-ball)
+       :add-list '(empty-handed)
+       :del-list '(has-ball))
+   (op 'eat-bananas
+       :preconds '(has-bananas)
+       :add-list '(empty-handed not-hungry)
+       :del-list '(has-bananas hungry))))
+@
+
+\section{The Maze Searching Domain}
+
+<<The Maze Searching Domain>>=
+(defun make-maze-ops (pair)
+  "Make maze ops in both directions."
+  (list (make-maze-op (first pair) (second pair))
+        (make-maze-op (second pair) (first pair))))
+
+(defun make-maze-op (here there)
+  "Make an operator to move between two places."
+  (op `(move from ,here to ,there)
+      :preconds `((at ,here))
+      :add-list `((at ,there))
+      :del-list `((at ,here))))
+
+(defparameter *maze-ops*
+  (mappend #'make-maze-ops
+    '((1 2) (2 3) (3 4) (4 9) (9 14) (9 8) (8 7) (7 12) (12 13)
+      (12 11) (11 6) (11 16) (16 17) (17 22) (21 22) (22 23)
+      (23 18) (23 24) (24 19) (19 20) (20 15) (15 10) (10 5) (20 25))))
+
+(defun find-path (start end)
+  "Search a maze for a path from start to end."
+  (let ((results (GPS `((at ,start)) `((at ,end)))))
+    (unless (null results)
+      (cons start (mapcar #'destination
+                          (remove '(start) results
+                                  :test #'equal))))))
+
+(defun destination (action)
+  "Find the Y in (executing (move from X to Y))."
+  (fifth (second action)))
+@
+
+\subsection{Tests}
+
+<<Maze Tests>>=
+(define-test maze
+  (use *maze-ops*)
+  (assert-equal '(1 2 3 4 9 8 7 12 11 16 17 22 23 24 19 20 25)
+                (find-path 1 25)))
+
+(define-test go-nowhere
+  (use *maze-ops*)
+  (assert-equal '(1) (find-path 1 1)))
+
+(define-test maze-reverse
+  (use *maze-ops*)
+  (assert-equal (find-path 1 25) (reverse (find-path 25 1))))
+@
+
+\begin{quote}
+  The moral is that when a programmer uses puns—saying what's convenient instead
+  of what's really happening--there's bound to be trouble.
+\end{quote}
+
+\section{The Blocks World Domain}
+
+<<The Blocks World Domain>>=
+(defun make-block-ops (blocks)
+  (let ((ops nil))
+    (dolist (a blocks)
+      (dolist (b blocks)
+        (unless (equal a b)
+          (dolist (c blocks)
+            (unless (or (equal c a)
+                        (equal c b))
+              (push (move-op a b c) ops)))
+          (push (move-op a 'table b) ops)
+          (push (move-op a b 'table) ops))))
+    ops))
+
+(defun move-op (a b c)
+  "Make an operator to move A from B to C."
+  (op `(move ,a from ,b to ,c)
+      :preconds `((space on ,a) (space on ,c) (,a on ,b))
+      :add-list (move-ons a b c)
+      :del-list (move-ons a c b)))
+
+(defun move-ons (a b c)
+  (if (eq b 'table)
+      `((,a on ,c))
+      `((,a on ,c) (space on ,b))))
+
+<<Blocks World Tests>>
+@
+
+<<Blocks World Tests>>=
+(define-test simplest-blocks-problem
+  (use (make-block-ops '(a b)))
+  (assert-equal '((start) (executing (move a from table to b)))
+                (gps '((a on table) (b on table) (space on a) (space on b)
+                       (space on table))
+                     '((a on b) (b on table)))))
+
+(define-test slighty-more-complex-blocks
+  (use (make-block-ops '(a b)))
+  (assert-equal '((start)
+                  (executing (move a from b to table))
+                  (executing (move b from table to a)))
+                (gps '((a on b) (b on table) (space on a) (space on table))
+                     '((b on a)))))
+
+(define-test blocks-goals-order-insignificant
+  (let ((ops (make-block-ops '(a b c))))
+    (let ((state '((a on b) (b on c) (c on table)
+                   (space on a) (space on table))))
+      (assert-equal '((start)
+                      (executing (move a from b to table))
+                      (executing (move b from c to a))
+                      (executing (move c from table to b)))
+                    (gps state '((b on a) (c on b)) ops))
+      (assert-equal '((start)
+                      (executing (move a from b to table))
+                      (executing (move b from c to a))
+                      (executing (move c from table to b)))
+                    (gps state '((c on b) (b on a)) ops)))))
+
+(define-test blocks-ops-ordered-intelligently
+  (let ((ops (make-block-ops '(a b c))))
+    (let ((state '((c on a) (a on table) (b on table)
+                   (space on c) (space on b) (space on table))))
+      (assert-equal '((start)
+                      (executing (move c from a to table))
+                      (executing (move a from table to b)))
+                    (gps state '((c on table) (a on b)) ops)))
+    (let ((state '((a on b) (b on c) (c on table)
+                   (space on a) (space on table))))
+      (assert-equal '((start)
+                      (executing (move a from b to table))
+                      (executing (move b from c to a))
+                      (executing (move c from table to b)))
+                    (gps state '((b on a) (c on b)) ops))
+      (assert-equal '((start)
+                      (executing (move a from b to table))
+                      (executing (move b from c to a))
+                      (executing (move c from table to b)))
+                    (gps state '((c on b) (b on a)) ops)))))
+
+<<Blocks: The Sussman Anomaly>>
+@
+
+\subsection{The Sussman Anomaly}
+
+N.B. These results are undesirable and will be addressed in chapter 6.
+<<Blocks: The Sussman Anomaly>>=
+(define-test blocks-the-sussman-anomaly
+  (let ((start '((c on a) (a on table) (b on table)
+                 (space on c) (space on b) (space on table))))
+    (assert-nil (gps start '((a on b) (b on c))))
+    (assert-nil (gps start '((b on c) (a on b))))))
+@
+
+\section{Debugging}
+
+<<Debugging usage>>=
+;; Example call
+(dbg :gps "The current goal is: ~a" goal)
+
+;; Turn on debugging
+(debug :gps)
+
+;; Turn off debugging
+(undebug :gps)
+@
+
+<<Print debugging information>>=
+(defvar *dbg-ids* nil
+  "Identifiers used by dbg")
+
+(defun dbg (id format-string &rest args)
+  "Print debugging info if (DEBUG ID) has been specified."
+  (when (member id *dbg-ids*)
+    (format *debug-io* "~&~?" format-string args)))
+
+(defun debug (&rest ids)
+  "Start dbg output on the given ids."
+  (setf *dbg-ids* (union ids *dbg-ids*)))
+
+(defun undebug (&rest ids)
+  "Stop dbg on the ids. With no ids, stop dbg altogether."
+  (setf *dbg-ids* (if (null ids) nil
+                      (set-difference *dbg-ids* ids))))
+
+(defun dbg-indent (id indent format-string &rest args)
+  "Print indented debugging info if (DEBUG ID) has been specified."
+  (when (member id *dbg-ids*)
+    (format *debug-io* "~&~V@T~?" (* 2 indent) format-string args)))
+@
+
+\section{Exercises}
+
+\subsection{Exercise 4.2}
+
+<<permutations>>=
+(defun permutations (xs)
+  (if (endp (cdr xs))
+      (list xs)
+      (loop for x in xs
+            append (loop for ys in (permutations (remove x xs :count 1
+                                                              :test  #'eq))
+                         collect (cons x ys)))))
+@
+
+\section{Tests}
+
+<<GPS Tests>>=
+(define-test complex
+  (assert-equal
+   (cons '(start)
+         (mapcar #'(lambda (step) (list 'executing step))
+                 '(look-up-number
+                   telephone-shop
+                   tell-shop-problem
+                   give-shop-money
+                   shop-installs-battery
+                   drive-son-to-school)))
+   (gps '(son-at-home car-needs-battery have-money have-phone-book)
+        '(son-at-school)
+        *school-ops*)))
+
+(define-test unsolvable
+  (assert-nil (gps '(son-at-home car-needs-battery have-money)
+                   '(son-at-school)
+                   *school-ops*)))
+
+(define-test simple
+  (assert-equal '((start) (executing drive-son-to-school))
+                (gps '(son-at-home car-works)
+                     '(son-at-school)
+                     *school-ops*)))
+
+(define-test money-leftover
+  (assert-equal '((start) (executing drive-son-to-school))
+                (gps '(son-at-home have-money car-works)
+                     '(have-money son-at-school)
+                     *school-ops*)))
+
+(define-test clobbered-sibling
+  (assert-nil (gps '(son-at-home car-needs-battery have-money have-phone-book)
+                   '(have-money son-at-school)
+                   *school-ops*)))
+@
+
+\chapter{{\sc Eliza}: Dialog with a Machine}
+
+\marginnote[\baselineskip]{
+  {\sc Eliza}, one of the more well-known AI programs of the 1960s, simulates a
+  psychotherapist, by way of a REPL.
+}
+
+<<src/eliza.lisp>>=
+(in-package #:paip)
+(defpackage #:paip.eliza
+  (:use #:cl #:lisp-unit))
+(in-package #:paip.eliza)
+
+<<ELIZA: Constants>>
+
+<<ELIZA: Top-Level Function>>
+
+<<ELIZA: Special Variables>>
+
+<<ELIZA: Data Types>>
+
+<<ELIZA: Functions>>
+@
+
+\section{Pattern Matching}
+
+\marginnote[\baselineskip]{
+  {\sc Eliza} makes heavy use of pattern matching, which is at once versatile
+  and limited.
+}
+
+<<ELIZA: Pattern Matching>>=
+<<pat-match>>
+
+<<match-variable>>
+
+<<segment-match>>
+
+<<segment-pattern-p>>
+
+<<variable-p>>
+@
+
+\subsection{Matching}
+
+\marginnote[\baselineskip]{%
+  Verify \lsp{var} is bound to \lsp{input} in \lsp{bindings}. If bound to
+  another value, [[fail]]. If unbound, [[extend-bindings]].
+}
+
+<<match-variable>>=
+(defun match-variable (var input bindings)
+  "Does VAR match input? Uses (or updates) and returns bindings."
+  (let ((binding (get-binding var bindings)))
+    (cond ((not binding) (extend-bindings var input bindings))
+          ((equal input (binding-val binding)) bindings)
+          (t fail))))
+@
+
+<<pat-match>>=
+(defun pat-match (pattern input &optional (bindings no-bindings))
+  "Match pattern against input in the context of the bindings."
+  (cond <<Fail if the binding list is \lsp{fail}>>
+        <<Match a variable>>
+        <<If \lsp{pattern} equals \lsp{input}, return \lsp{bindings}>>
+        <<Match a segment>>
+        <<Call [[pat-match]] recursively>>
+        (t fail)))
+@
+
+\marginnote[\baselineskip]{%
+  If the binding list is [[fail]], then the match fails, because some previous
+  match must have failed.
+}
+
+<<Fail if the binding list is \lsp{fail}>>=
+((eq bindings fail) fail)
+@
+
+\marginnote[\baselineskip]{%
+  If the \lsp{pattern} is a single variable, return the result of
+  [[match-variable]]; either \lsp{bindings} (possibly extended) or [[fail]].
+}
+
+<<Match a variable>>=
+((variable-p pattern) (match-variable pattern input bindings))
+@
+
+\marginnote[0.5\baselineskip]{%
+  If \lsp{pattern} equals \lsp{input}, return \lsp{bindings} as is.
+}
+
+<<If \lsp{pattern} equals \lsp{input}, return \lsp{bindings}>>=
+((eql pattern input) bindings)
+@
+
+\marginnote[\baselineskip]{%
+  When both \lsp{pattern} and \lsp{input} are lists and the \lsp{(car pattern)}
+  is a segment variable, match the variable to the initial part of the
+  \lsp{input} and attempt to match \lsp{(cdr pattern)} to the rest.
+}
+
+<<Match a segment>>=
+((segment-pattern-p pattern) (segment-match pattern input bindings))
+@
+
+<<Call [[pat-match]] recursively>>=
+((and (consp pattern) (consp input))
+ (pat-match (rest pattern) (rest input)
+            (pat-match (first pattern) (first input)
+                       bindings)))
+@
+
+
+
+<<segment-match>>=
+(defun segment-match (pattern input bindings &optional (start 0))
+  "Match the segment pattern ((?* var) . pat) against input."
+  (let ((var (second (first pattern)))
+        (pat (rest pattern)))
+    (if (null pat)
+        (match-variable var input bindings)
+        (let ((pos (position (first pat) input
+                             :start start :test #'equal)))
+          (if (null pos)
+              fail
+              (let ((b2 (pat-match pat (subseq input pos) bindings)))
+                (if (eq b2 fail)
+                    (segment-match pattern input bindings (+ pos 1))
+                    (match-variable var (subseq input 0 pos) b2))))))))
+@
+
+\subsection{Predicates}
+
+<<segment-pattern-p>>=
+(defun segment-pattern-p (pattern)
+  "Is this a segment matching pattern: ((?* var) . pat)"
+  (and (consp pattern)
+       (starts-with (first pattern) '?*)))
+@
+
+<<variable-p>>=
+(defun variable-p (x)
+  "Is x a variable (a symbol beginning with '?')?"
+  (and (symbolp x)
+       (equal (char (symbol-name x) 0) #\?)))
+@
+
+\section{Constants}
+
+<<ELIZA: Constants>>=
+(defconstant fail nil
+  "Indicates pat-match failure")
+
+(defconstant no-bindings '((t . t))
+  "Indicates pat-match success, with no variables.")
+@
+
+<<ELIZA: Binding Functions>>=
+(defun get-binding (var bindings)
+  "Find a (variable . value) pair in a binding list."
+  (assoc var bindings))
+
+(defun binding-val (binding)
+  "Get the value part of a single binding."
+  (cdr binding))
+
+(defun lookup (var bindings)
+  "Get the value part (for var) from a binding list."
+  (binding-val (get-binding var bindings)))
+
+(defun extend-bindings (var val bindings)
+  "Add a (var . value) pair to a binding list."
+  (cons (cons var val)
+        (if (eq bindings no-bindings)
+            nil
+            bindings)))
+@
+
+\section{Rules}
+
+<<ELIZA: Data Types>>=
+(defun rule-pattern (rule) (first rule))
+(defun rule-responses (rule) (rest rule))
+@
+
+<<ELIZA: Special Variables>>=
+(defparameter *eliza-rules*
+  '((((?* ?x) hello (?* ?y))
+     (How do you do.  Please state your problem.))
+    (((?* ?x) I want (?* ?y))
+     (What would it mean if you got ?y)
+     (Why do you want ?y) (Suppose you got ?y soon))
+    (((?* ?x) if (?* ?y))
+     (Do you really think its likely that ?y) (Do you wish that ?y)
+     (What do you think about ?y) (Really-- if ?y))
+    (((?* ?x) no (?* ?y))
+     (Why not?) (You are being a bit negative)
+     (Are you saying "NO" just to be negative?))
+    (((?* ?x) I was (?* ?y))
+     (Were you really?) (Perhaps I already knew you were ?y)
+     (Why do you tell me you were ?y now?))
+    (((?* ?x) I feel (?* ?y))
+     (Do you often feel ?y ?))
+    (((?* ?x) I felt (?* ?y))
+     (What other feelings do you have?))))
+@
+
+\section{{\sc Eliza} Proper}
+
+<<ELIZA: Top-Level Function>>=
+(defun eliza ()
+  "Respond to user input using pattern matching rules."
+  (loop
+    (print 'eliza>)
+    (write (flatten (use-eliza-rules (read))) :pretty t)))
+@
+
+<<ELIZA: Functions>>=
+<<use-eliza-rules>>
+
+<<switch-viewpoint>>
+
+<<ELIZA: Pattern Matching>>
+
+<<ELIZA: Binding Functions>>
+
+<<flatten>>
+
+<<random-elt>>
+
+<<mappend>>
+
+<<Is the argument a list that starts with a given atom?>>
+@
+
+<<use-eliza-rules>>=
+(defun use-eliza-rules (input)
+  "Find some rule with which to transform the input."
+  (some #'(lambda (rule)
+            (let ((result (pat-match (rule-pattern rule) input)))
+              (unless (eq result fail)
+                (sublis (switch-viewpoint result)
+                        (random-elt (rule-responses rule))))))
+        *eliza-rules*))
+@
+
+<<switch-viewpoint>>=
+(defun switch-viewpoint (words)
+  "Change I to you and vice versa, and so on."
+  (sublis '((I . you) (you . I) (me . you) (am . are))
+          words))
+@
+
+<<flatten>>=
+(defun flatten (the-list)
+  "Append together elements (or lists) in the list."
+  (mappend #'mklist the-list))
+
+(defun mklist (x)
+  "Return x if it is a list, otherwise (x)."
+  (if (listp x)
+      x
+      (list x)))
+@
+
+\chapter{Build Software Tools}
+
+\section{An Interactive Interpreter Tool}
+
+\begin{minted}[]{lisp}
+(defun program ()
+  (loop
+    (print prompt)
+    (print (transform (read)))))
+\end{minted}
+
+<<interactive-interpreter>>=
+(defun interactive-interpreter (prompt transformer)
+  "(`prompt' for and) read an expression, `transform' it and print the result."
+  (loop
+    (handler-case
+        (progn
+          (if (stringp prompt)
+              (print prompt)
+              (funcall prompt))
+          (print (funcall transformer (read))))
+      (error (condition)
+        (format t "~&;; Error ~a ignored. Back to top level."
+                condition)))))
+
+<<prompt-generator>>
+@
+
+<<prompt-generator>>=
+(defun prompt-generator (&optional (num 0) (ctl-string "[~d] "))
+  "Return a function that prints prompts like [1], [2], etc."
+  #'(lambda () (format t ctl-string (incf num))))
+@
+
+\section{Package}
+
+<<src/tools.lisp>>=
+(in-package #:paip)
+(defpackage #:paip.tools
+  (:use #:cl #:lisp-unit))
+(in-package #:paip.tools)
+
+<<interactive-interpreter>>
+@
+
+\chapter{Package}
+
+<<paip.asd>>=
+;;;; paip.asd
+
+(asdf:defsystem #:paip
+  :description "Paradigms of Artificial Intelligence Programming exercises"
+  :author "Eric Bailey <eric@ericb.me>"
+  ;; TODO :license "Specify license here"
+  :depends-on (#:lisp-unit)
+  :serial t
+  :components ((:module "src"
+                :serial t
+                :components
+                ((:file "intro")
+                 (:file "gps")
+                 (:file "eliza")
+                 (:file "tools")))))
+
+(defpackage #:paip
+  (:use #:cl))
+(in-package #:paip)
+@
+
+\chapter{Test Runner}
+
+<<bin/runtests>>=
+#! /usr/bin/env nix-shell
+#! nix-shell -i sh -p sbcl
+
+# N.B. quicklisp must be installed and configured.
+
+sbcl --noinform --non-interactive \
+     --userinit init.lisp \
+     --eval "(in-package :paip.$1)" \
+     --eval "(let* ((results  (lisp-unit:run-tests :all :paip.$1))
+                    (failures (lisp-unit:failed-tests results))
+                    (status   (if (null failures) 0 1)))
+               (lisp-unit:print-failures results)
+               (sb-posix:exit status))"
+@
+
+<<init.lisp>>=
+#-quicklisp
+(let ((quicklisp-init (merge-pathnames "quicklisp/setup.lisp"
+                                       (user-homedir-pathname))))
+  (when (probe-file quicklisp-init)
+    (load quicklisp-init)))
+
+(push (concatenate 'string (sb-posix:getcwd) "/")
+      asdf:*central-registry*)
+
+(asdf:load-system :paip)
+@
+
+\chapter{Chunks}
+\nowebchunks
+
+\chapter{Index}
+\nowebindex
+
+\bibliography{paip}
+\bibliographystyle{plainnat}
+
+\end{document}
