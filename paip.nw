@@ -798,7 +798,8 @@ N.B. These results are undesirable and will be addressed in chapter 6.
 <<src/eliza.lisp>>=
 (in-package #:paip)
 (defpackage #:paip.eliza
-  (:use #:cl #:lisp-unit))
+  (:use #:cl #:lisp-unit)
+  (:export "eliza"))
 (in-package #:paip.eliza)
 
 <<ELIZA: Constants>>

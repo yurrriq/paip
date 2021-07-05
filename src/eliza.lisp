@@ -1,6 +1,7 @@
 (in-package #:paip)
 (defpackage #:paip.eliza
-  (:use #:cl #:lisp-unit))
+  (:use #:cl #:lisp-unit)
+  (:export "eliza"))
 (in-package #:paip.eliza)
 
 (defconstant fail nil
