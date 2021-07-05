@@ -42,3 +42,22 @@
         ((atom exp) 1)
         (t (+ (count-atoms (first exp) 1)
               (count-atoms (rest exp) 0)))))
+
+;; Exercise 1.4
+(defun count-anywhere (item tree)
+  "Count the occurrences of item anywhere within tree."
+  (cond ((eql item tree) 1)
+        ((atom tree) 0)
+        (t (+ (count-anywhere item (first tree))
+              (count-anywhere item (rest tree))))))
+
+(define-test test-count-anywhere
+  (assert-equal 3 (count-anywhere 'a '(a ((a) b) a))))
+
+;; Exercise 1.5
+(defun dot-product (lhs rhs)
+  "Compute the mathematical dot product of two vectors."
+  (apply #'+ (mapcar #'* lhs rhs)))
+
+(define-test test-dot-product
+  (assert-equal 110 (dot-product '(10 20) '(3 4))))

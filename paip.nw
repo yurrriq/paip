@@ -102,6 +102,12 @@ if (member (first name) *titles*)
 
 ;; Exercise 1.3
 <<Exercise 1.3>>
+
+;; Exercise 1.4
+<<Exercise 1.4>>
+
+;; Exercise 1.5
+<<Exercise 1.5>>
 @
 
 \subsection{Exercise 1.1}
@@ -252,6 +258,56 @@ Define some well-known suffixes.
 <<otherwise add the count of the atoms in the first and rest of exp>>=
 (t (+ (count-atoms (first exp) 1)
       (count-atoms (rest exp) 0)))
+@
+
+\subsection{Exercise 1.4}
+
+<<Exercise 1.4>>=
+(defun count-anywhere (item tree)
+  "Count the occurrences of item anywhere within tree."
+  (cond <<if item is equal to tree, there is one occurrence>>
+        <<if tree is an atom, there are no occurrences>>
+        <<otherwise, add the occurrence within first the first and rest of tree>>))
+
+<<Exercise 1.4 tests>>
+@
+
+<<if item is equal to tree, there is one occurrence>>=
+((eql item tree) 1)
+@
+
+<<if tree is an atom, there are no occurrences>>=
+((atom tree) 0)
+@
+
+<<otherwise, add the occurrence within first the first and rest of tree>>=
+(t (+ (count-anywhere item (first tree))
+      (count-anywhere item (rest tree))))
+@
+
+<<Exercise 1.4 tests>>=
+(define-test test-count-anywhere
+  (assert-equal 3 (count-anywhere 'a '(a ((a) b) a))))
+@
+
+\subsection{Exercise 1.5}
+
+<<Exercise 1.5>>=
+(defun dot-product (lhs rhs)
+  "Compute the mathematical dot product of two vectors."
+  <<multiply elements of the vectors pairwise and sum the results>>)
+
+<<Exercise 1.5 tests>>
+@
+
+\href{http://www.lispworks.com/documentation/HyperSpec/Body/f_mapc_.htm\#mapcar}
+<<multiply elements of the vectors pairwise and sum the results>>=
+(apply #'+ (mapcar #'* lhs rhs))
+@
+
+<<Exercise 1.5 tests>>=
+(define-test test-dot-product
+  (assert-equal 110 (dot-product '(10 20) '(3 4))))
 @
 
 \section{Higher-Order Functions}
@@ -1129,8 +1185,7 @@ N.B. These results are undesirable and will be addressed in chapter 6.
 \chapter{Test Runner}
 
 <<bin/runtests>>=
-#! /usr/bin/env nix-shell
-#! nix-shell -i sh -p sbcl
+#! /usr/bin/env bash
 
 # N.B. quicklisp must be installed and configured.
 
@@ -1146,8 +1201,7 @@ sbcl --noinform --non-interactive \
 
 <<init.lisp>>=
 #-quicklisp
-(let ((quicklisp-init (merge-pathnames "quicklisp/setup.lisp"
-                                       (user-homedir-pathname))))
+(let ((quicklisp-init "quicklisp/setup.lisp"))
   (when (probe-file quicklisp-init)
     (load quicklisp-init)))
 
