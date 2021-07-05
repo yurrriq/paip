@@ -9,7 +9,7 @@
 
 ;; Exercise 1.1
 (defparameter *suffixes*
-  '(MD Jr)
+  '(MD Jr. Sr. III)
   "A list of suffixes that can appear at the end of a name.")
 
 (defun last-name (name)
@@ -20,7 +20,7 @@
 
 (define-test test-last-name
   (assert-equal 'Morgan (last-name '(Rex Morgan MD)))
-  (assert-equal 'Downey (last-name '(Morton Downey Jr))))
+  (assert-equal 'Downey (last-name '(Morton Downey Jr.))))
 
 ;; Exercise 1.2
 (defun square (x) (expt x 2))
@@ -35,9 +35,10 @@
   (assert-equal 9 (power 3 2)))
 
 ;; Exercise 1.3
-(defun count-atoms (exp)
-  "Return the total number of non-nil atoms in the expression."
-  (cond ((null exp) 0)
+(defun count-atoms (exp &optional (if-null 1))
+  "Return the total number of atoms in the expression,
+   counting nil as an atom only in non-tail position."
+  (cond ((null exp) if-null)
         ((atom exp) 1)
-        (t (+ (count-atoms (first exp))
-              (count-atoms (rest exp))))))
+        (t (+ (count-atoms (first exp) 1)
+              (count-atoms (rest exp) 0)))))

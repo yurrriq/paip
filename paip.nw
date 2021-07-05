@@ -144,16 +144,17 @@ Otherwise, it's the last name, so return it.
 (first (last name))
 @
 
+Define some well-known suffixes.
 <<suffixes>>=
 (defparameter *suffixes*
-  '(MD Jr)
+  '(MD Jr. Sr. III)
   "A list of suffixes that can appear at the end of a name.")
 @ %def *suffixes*
 
 <<Exercise 1.1 tests>>=
 (define-test test-last-name
   <<Rex Morgan MD>>
-  <<Morton Downey, Jr>>)
+  <<Morton Downey, Jr.>>)
 @
 
 \marginnote[\baselineskip]{
@@ -163,8 +164,8 @@ Otherwise, it's the last name, so return it.
 (assert-equal 'Morgan (last-name '(Rex Morgan MD)))
 @
 
-<<Morton Downey, Jr>>=
-(assert-equal 'Downey (last-name '(Morton Downey Jr)))
+<<Morton Downey, Jr.>>=
+(assert-equal 'Downey (last-name '(Morton Downey Jr.)))
 @
 
 \subsection{Exercise 1.2}
@@ -232,15 +233,16 @@ Otherwise, it's the last name, so return it.
 \end{quote}
 
 <<Exercise 1.3>>=
-(defun count-atoms (exp)
-  "Return the total number of non-nil atoms in the expression."
-  (cond <<if exp is nil there are no atoms>>
+(defun count-atoms (exp &optional (if-null 1))
+  "Return the total number of atoms in the expression,
+   counting nil as an atom only in non-tail position."
+  (cond <<if exp is nil there are if-null atoms>>
         <<if exp is an atom there is only one>>
         <<otherwise add the count of the atoms in the first and rest of exp>>))
 @
 
-<<if exp is nil there are no atoms>>=
-((null exp) 0)
+<<if exp is nil there are if-null atoms>>=
+((null exp) if-null)
 @
 
 <<if exp is an atom there is only one>>=
@@ -248,8 +250,8 @@ Otherwise, it's the last name, so return it.
 @
 
 <<otherwise add the count of the atoms in the first and rest of exp>>=
-(t (+ (count-atoms (first exp))
-      (count-atoms (rest exp))))
+(t (+ (count-atoms (first exp) 1)
+      (count-atoms (rest exp) 0)))
 @
 
 \section{Higher-Order Functions}
