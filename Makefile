@@ -20,7 +20,7 @@ all: \
 
 check: bin/runtests all
 	@ echo
-	@ for subpkg in intro gps; do \
+	@ for subpkg in intro simple gps; do \
 		echo "#:paip.$$subpkg" ; \
 		$< $$subpkg ; \
 	done

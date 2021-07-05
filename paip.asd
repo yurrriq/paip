@@ -10,6 +10,7 @@
                 :serial t
                 :components
                 ((:file "intro")
+                 (:file "simple")
                  (:file "gps")
                  (:file "eliza")
                  (:file "tools")))))
