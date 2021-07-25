@@ -3,7 +3,6 @@
   (when (probe-file quicklisp-init)
     (load quicklisp-init)))
 
-(push (concatenate 'string (sb-posix:getcwd) "/")
-      asdf:*central-registry*)
+(push (uiop:getcwd) asdf:*central-registry*)
 
 (asdf:load-system :paip)

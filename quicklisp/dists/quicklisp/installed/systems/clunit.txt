@@ -1,0 +1,1 @@
+dists/quicklisp/software/clunit-20171019-git/clunit.asd

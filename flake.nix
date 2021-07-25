@@ -46,11 +46,11 @@
 
       devShell.x86_64-linux = pkgs.mkShell {
         buildInputs = with pkgs; [
+          clisp
           nixpkgs-fmt
           noweb
           python3Packages.pygments
           rlwrap
-          sbcl
           (
             texlive.combine {
               inherit noweb;

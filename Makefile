@@ -36,10 +36,15 @@ tex/paip.tex: export FINDUSES_LISP=1
 tex/paip.tex: paip.nw
 	${weave}
 
-quicklisp:
-	@ sbcl --noinform --non-interactive --no-userinit \
-		--load lib/quicklisp.lisp \
-		--eval '(quicklisp-quickstart:install :path "quicklisp/")'
-	@ sbcl --noinform --non-interactive --no-userinit \
-		--load quicklisp/setup.lisp \
-		--eval '(ql:quickload "lisp-unit")'
+quicklisp: quicklisp/setup.lisp
+
+quicklisp/setup.lisp: lib/quicklisp.lisp
+	@ mkdir -p $(@D)
+	@ clisp -ansi -i $< -norc \
+		-x '(quicklisp-quickstart:install :path "quicklisp/")'
+
+install-deps: quicklisp/setup.lisp
+	@ clisp -ansi -i $< -norc \
+		-x '(ql:quickload "alexandria")' \
+		-x '(ql:quickload "check-it")' \
+		-x '(ql:quickload "clunit")'

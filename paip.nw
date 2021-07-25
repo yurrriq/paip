@@ -1,4 +1,4 @@
-% -*- noweb-code-mode: lisp-mode; -*-
+% -*- noweb-code-mode: common-lisp-mode; -*-
 \documentclass{tufte-book}
 \usepackage{noweb}
 
@@ -432,7 +432,7 @@ Because I can't resist leaving a yak unshaved, define \lsp{if-let}, too.
      (if ,name ,then ,else)))
 @
 
-\begin{marginnote}
+\marginnote{%
 <<phrase is a list>>=
 (listp phrase)
 @
@@ -440,7 +440,7 @@ Because I can't resist leaving a yak unshaved, define \lsp{if-let}, too.
 <<generate a phrase>>=
 (mappend #'generate phrase)
 @
-\end{marginnote}
+}
 
 <<src/simple.lisp>>=
 <<if-let>>
@@ -457,11 +457,11 @@ Because I can't resist leaving a yak unshaved, define \lsp{if-let}, too.
 
 \subsection{Exercise 2.2}
 
-\begin{marginnote}
+\marginnote{%
 <<phrase is nonterminal>>=
 (non-terminal-p phrase)
 @
-\end{marginnote}
+}
 
 <<non-terminal-p>>=
 (defun non-terminal-p (category)
@@ -579,7 +579,42 @@ Because I can't resist leaving a yak unshaved, define \lsp{if-let}, too.
              :test (complement test) keyword-args)))
 
 ;; (setf (symbol-function 'find-all-if) #'remove-if-not)
+  @
+
+\section{Exercises}
+
+<<src/overview.lisp>>=
+(in-package #:paip)
+(defpackage #:paip.overview
+  (:use #:cl #:alexandria #:check-it #:clunit)
+  (:shadowing-import-from #:alexandria #:set-equal))
+(in-package #:paip.overview)
+
+<<A version of length using the function reduce>>
 @
+
+\subsection{Exercise 3.9}
+
+<<A version of length using the function reduce>>=
+(defun length-r (lst)
+  (reduce #'+ lst :key (constantly 1)))
+
+(defsuite overview-suite ())
+
+(register-package-regression-file :paip.overview "regressions.lisp")
+
+(deftest test-length-r-check-it (overview-suite)
+  (let ((lst (iota 4)))
+    (assert-equal (length lst) (length-r lst))))
+
+(deftest test-length-r-check-it (overview-suite)
+  (let ((*num-trials* 100))
+    (assert-true
+      (check-it (generator (list (integer)))
+                (lambda (lst)
+                  (assert-equal (length lst) (length-r lst)))))))
+@
+
 
 \chapter{GPS: The General Problem Solver}
 
@@ -594,6 +629,8 @@ Because I can't resist leaving a yak unshaved, define \lsp{if-let}, too.
 <<find-all>>
 
 <<mappend>>
+
+<<The current state: a list of conditions>>
 
 <<A list of available operators>>
 
@@ -626,6 +663,10 @@ Because I can't resist leaving a yak unshaved, define \lsp{if-let}, too.
 <<Print debugging information>>
 
 <<GPS Tests>>
+@
+
+<<The current state: a list of conditions>>=
+(defvar *state* nil "The current state: a list of conditions.")
 @
 
 <<A list of available operators>>=
